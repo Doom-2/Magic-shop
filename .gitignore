@@ -1,0 +1,7 @@
+/.idea
+postgres
+__pycache__
+.DS_Store
+.pytest_cache
+utils.py
+poetry.lock
