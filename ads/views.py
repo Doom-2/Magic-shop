@@ -1,6 +1,7 @@
 import json
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
+from django.db.models import Count, Q
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -284,7 +285,11 @@ class UserListView(ListView):
 
     def get(self, request, *args, **kwargs):
         super().get(request, *args, **kwargs)
-        object_list = self.object_list.prefetch_related("locations").order_by("username")
+
+        # The 1st way to count user's published ads using 'annotate()', 'filter()' and Q-class
+        object_list = self.object_list.prefetch_related("locations").order_by("username").annotate(
+            total_ads=Count("ads", filter=Q(ads__is_published=True))
+        )
 
         paginator = Paginator(object_list, TOTAL_ON_PAGE)
         page_number = int(request.GET.get("page", 1))
@@ -300,7 +305,7 @@ class UserListView(ListView):
                 "role": user.role,
                 "age": user.age,
                 "locations": list(map(str, user.locations.all())),
-                "total_ads": user.ads.filter(is_published=True).count()
+                "total_ads": user.total_ads
             })
 
         response = {
@@ -326,7 +331,10 @@ class UserDetailView(DetailView):
             "role": user.role,
             "age": user.age,
             "locations": list(map(str, user.locations.all())),
+
+            # The 2nd way to count user's published ads using 'related_name' param of model
             "total_ads": user.ads.filter(is_published=True).count()
+
         })
 
 
