@@ -62,7 +62,7 @@ class Migration(migrations.Migration):
                 ('description', models.CharField(max_length=2000)),
                 ('address', models.CharField(max_length=200)),
                 ('is_published', models.BooleanField(default=False)),
-                ('image', models.ImageField(upload_to='logos/')),
+                ('image', models.ImageField(upload_to='images/')),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='ads.user')),
                 ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='ads.category')),
             ],

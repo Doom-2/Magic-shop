@@ -7,6 +7,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
@@ -26,17 +27,20 @@ class Location(models.Model):
 
 
 class User(models.Model):
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
+    ROLES = [("admin", "Администратор"), ("moderator", "Модератор"), ("member", "Участник")]
+
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
     username = models.CharField(max_length=30)
     password = models.CharField(max_length=30)
-    role = models.CharField(max_length=15)
+    role = models.CharField(max_length=15, choices=ROLES, default="member")
     age = models.PositiveSmallIntegerField()
-    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    locations = models.ManyToManyField(Location)
 
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+        ordering = ["username"]
 
     def __str__(self):
         return self.username
@@ -44,17 +48,17 @@ class User(models.Model):
 
 class Ad(models.Model):
     name = models.CharField(max_length=100)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, related_name='ads', on_delete=models.CASCADE)
     price = models.PositiveIntegerField(null=True, blank=True)
     description = models.CharField(max_length=2000)
-    address = models.CharField(max_length=200)
     is_published = models.BooleanField(default=False)
-    image = models.ImageField(upload_to='logos/')
+    image = models.ImageField(upload_to='images/')
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = "Объявление"
         verbose_name_plural = "Объявления"
+        ordering = ["-price"]
 
     def __str__(self):
         return self.name
