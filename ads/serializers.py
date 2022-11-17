@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ads.models import Ad, Category, User, Location
+from ads.models import User, Location
 
 
 class LocationSerializer(serializers.ModelSerializer):
