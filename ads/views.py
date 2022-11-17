@@ -321,63 +321,12 @@ class CategoryDeleteView(DeleteView):
 class UserListView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    # model = User
-
-    # def get(self, request, *args, **kwargs):
-    #     super().get(request, *args, **kwargs)
-    #
-    #     # The 1st way to count user's published ads using 'annotate()', 'filter()' and Q-class
-    #     object_list = self.object_list.prefetch_related("locations").order_by("username").annotate(
-    #         total_ads=Count("ads", filter=Q(ads__is_published=True))
-    #     )
-    #
-    #     paginator = Paginator(object_list, TOTAL_ON_PAGE)
-    #     page_number = int(request.GET.get("page", 1))
-    #     page_obj = paginator.get_page(page_number)
-    #
-    #     users = []
-    #     for user in page_obj:
-    #         users.append({
-    #             "id": user.id,
-    #             "username": user.username,
-    #             "first_name": user.first_name,
-    #             "last_name": user.last_name,
-    #             "role": user.role,
-    #             "age": user.age,
-    #             "locations": list(map(str, user.locations.all())),
-    #             "total_ads": user.total_ads
-    #         })
-    #
-    #     response = {
-    #         "items": users,
-    #         "total": paginator.count,
-    #         "num_pages": paginator.num_pages
-    #     }
-    #     return JsonResponse(response, safe=False)
 
 
 # Get a single user
 class UserDetailView(RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
-    # model = User
-
-    # def get(self, request, *args, **kwargs):
-    #     user = self.get_object()
-    #
-    #     return JsonResponse({
-    #         "id": user.id,
-    #         "username": user.username,
-    #         "first_name": user.first_name,
-    #         "last_name": user.last_name,
-    #         "role": user.role,
-    #         "age": user.age,
-    #         "locations": list(map(str, user.locations.all())),
-    #
-    #         # The 2nd way to count user's published ads using 'related_name' param of model
-    #         "total_ads": user.ads.filter(is_published=True).count()
-    #
-    #     })
 
 
 # Create a new user
@@ -385,46 +334,6 @@ class UserDetailView(RetrieveAPIView):
 class UserCreateView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
-    # model = User
-    # fields = ["username", "first_name", "last_name", "password", "role", "age", "locations"]
-    #
-    # def post(self, request, *args, **kwargs):
-    #     super().post(request, *args, **kwargs)
-    #
-    #     user_data = UserCreateSerializer(data=json.loads(request.body))
-    #     if user_data.is_valid():
-    #         user_data.save()
-    #     else:
-    #         return JsonResponse(user_data.errors)
-    #
-    #     user = User.objects.create(
-    #         username=user_data["username"],
-    #         password=user_data["password"],
-    #         first_name=user_data["first_name"],
-    #         last_name=user_data["last_name"],
-    #         role=user_data["role"],
-    #         age=user_data["age"],
-    #     )
-    #
-    #     for location in user_data["locations"]:
-    #         location_obj, created = Location.objects.get_or_create(
-    #             name=location,
-    #             defaults={
-    #                 "lat": 0,
-    #                 "lng": 0
-    #             }
-    #         )
-    #         user_data.locations.add(location_obj)
-    #
-    #     return JsonResponse({
-    #         "id": user.id,
-    #         "username": user.username,
-    #         "first_name": user.first_name,
-    #         "last_name": user.last_name,
-    #         "role": user.role,
-    #         "age": user.age,
-    #         "locations": list(map(str, user.locations.all()))
-    #     })
 
 
 # Update an existing user
@@ -432,55 +341,6 @@ class UserCreateView(CreateAPIView):
 class UserUpdateView(UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserUpdateSerializer
-    # model = User
-    # fields = ["username", "first_name", "last_name", "password", "age", "locations"]
-
-    # def patch(self, request, *args, **kwargs):
-    #     super().post(request, *args, **kwargs)
-    #
-    #     user_data = json.loads(request.body)
-    #
-    #     if "username" in user_data.keys():
-    #         self.object.username = user_data["username"]
-    #     if "first_name" in user_data.keys():
-    #         self.object.first_name = user_data["first_name"]
-    #     if "last_name" in user_data.keys():
-    #         self.object.last_name = user_data["last_name"]
-    #     if "password" in user_data.keys():
-    #         self.object.password = user_data["password"]
-    #     if "age" in user_data.keys():
-    #         self.object.age = user_data["age"]
-    #
-    #     if "locations" in user_data.keys():
-    #         for location in user_data["locations"]:
-    #             location_obj, created = Location.objects.get_or_create(
-    #                 name=location,
-    #                 defaults={
-    #                     "lat": 0,
-    #                     "lng": 0
-    #                 }
-    #             )
-    #             self.object.locations.add(location_obj)
-    #
-    #     for location in self.object.locations.all():
-    #         if location.name not in user_data["locations"]:
-    #             self.object.locations.remove(location)
-    #
-    #     try:
-    #         self.object.full_clean()
-    #     except ValidationError as e:
-    #         return JsonResponse(e.message_dict, status=422)
-    #
-    #     self.object.save()
-    #
-    #     return JsonResponse({
-    #         "id": self.object.id,
-    #         "username": self.object.username,
-    #         "first_name": self.object.first_name,
-    #         "last_name": self.object.last_name,
-    #         "age": self.object.age,
-    #         "locations": list(map(str, self.object.locations.all()))
-    #     })
 
 
 # Delete an existing user
@@ -488,14 +348,6 @@ class UserUpdateView(UpdateAPIView):
 class UserDeleteView(DestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserDestroySerializer
-    # model = User
-    # success_url = "/"
-    #
-    # def delete(self, request, *args, **kwargs):
-    #
-    #     super().delete(request, *args, **kwargs)
-    #
-    #     return JsonResponse({"status": "OK"}, status=204)
 
 
 ''' #################### Locations #################### '''
