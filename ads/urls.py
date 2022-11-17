@@ -16,6 +16,11 @@ Including another URLconf
 
 from django.urls import path
 from ads import views
+from rest_framework import routers
+from ads.views import LocationsViewSet
+
+router = routers.SimpleRouter()
+router.register('location', LocationsViewSet)
 
 urlpatterns = [
     # ads
@@ -40,3 +45,5 @@ urlpatterns = [
     path("user/<int:pk>/update/", views.UserUpdateView.as_view(), name="update_user"),
     path("user/<int:pk>/delete/", views.UserDeleteView.as_view(), name="delete_user"),
 ]
+
+urlpatterns += router.urls
