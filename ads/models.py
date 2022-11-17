@@ -45,6 +45,10 @@ class User(models.Model):
     def __str__(self):
         return self.username
 
+    @property
+    def total_ads(self):
+        return self.ads.filter(is_published=True).count()
+
 
 class Ad(models.Model):
     name = models.CharField(max_length=100)
