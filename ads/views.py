@@ -330,21 +330,18 @@ class UserDetailView(RetrieveAPIView):
 
 
 # Create a new user
-# @method_decorator(csrf_exempt, name='dispatch')
 class UserCreateView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
 
 
 # Update an existing user
-# @method_decorator(csrf_exempt, name='dispatch')
 class UserUpdateView(UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserUpdateSerializer
 
 
 # Delete an existing user
-# @method_decorator(csrf_exempt, name="dispatch")
 class UserDeleteView(DestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserDestroySerializer
