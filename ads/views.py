@@ -350,7 +350,6 @@ class UserDeleteView(DestroyAPIView):
 ''' #################### Locations #################### '''
 
 
-
 # Get all locations
 class LocationsViewSet(ModelViewSet):
     queryset = Location.objects.all()
