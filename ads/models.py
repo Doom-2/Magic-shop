@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 
 class Category(models.Model):
@@ -26,16 +27,16 @@ class Location(models.Model):
         return self.name
 
 
-class User(models.Model):
-    ROLES = [("admin", "Администратор"), ("moderator", "Модератор"), ("member", "Участник")]
+class User(AbstractUser):
+    ROLES = [
+        ("admin", "Администратор"),
+        ("moderator", "Модератор"),
+        ("member", "Участник")
+    ]
 
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=30, blank=True)
-    username = models.CharField(max_length=30)
-    password = models.CharField(max_length=30)
     role = models.CharField(max_length=15, choices=ROLES, default="member")
-    age = models.PositiveSmallIntegerField()
-    locations = models.ManyToManyField(Location)
+    age = models.PositiveSmallIntegerField(null=True, blank=True)
+    locations = models.ManyToManyField(Location, blank=True)
 
     class Meta:
         verbose_name = "Пользователь"
@@ -48,6 +49,11 @@ class User(models.Model):
     @property
     def total_ads(self):
         return self.ads.filter(is_published=True).count()
+
+    # def save(self, *args, **kwargs):
+    #     self.set_password(self.password)
+    #
+    #     super().save()
 
 
 class Ad(models.Model):
@@ -63,6 +69,19 @@ class Ad(models.Model):
         verbose_name = "Объявление"
         verbose_name_plural = "Объявления"
         ordering = ["-price"]
+
+    def __str__(self):
+        return self.name
+
+
+class Selection(models.Model):
+    name = models.CharField(max_length=30, unique=True)
+    owner = models.ForeignKey(User, related_name='selections', on_delete=models.CASCADE)
+    items = models.ManyToManyField(Ad)
+
+    class Meta:
+        verbose_name = "Подборка"
+        verbose_name_plural = "Подборки"
 
     def __str__(self):
         return self.name

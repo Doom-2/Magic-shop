@@ -1,11 +1,16 @@
 from rest_framework import serializers
-from ads.models import User, Location
+from ads.models import Location, User, Ad, Selection
+
+''' #################### Locations #################### '''
 
 
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = '__all__'
+
+
+''' #################### Users #################### '''
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -21,7 +26,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
-
     id = serializers.IntegerField(required=False)
     locations = serializers.SlugRelatedField(
         required=False,
@@ -35,7 +39,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def is_valid(self, *, raise_exception=False):
-
         self._locations = self.initial_data.pop("locations")
         return super().is_valid(raise_exception=raise_exception)
 
@@ -56,7 +59,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-
     locations = serializers.SlugRelatedField(
         required=False,
         many=True,
@@ -94,7 +96,116 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserDestroySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
+        fields = ["id"]
+
+
+''' #################### Ads #################### '''
+
+
+class AdListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ad
+        fields = '__all__'
+
+
+class AdDestroySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ad
+        fields = ["id"]
+
+
+class AdUpdateSerializer(serializers.ModelSerializer):
+
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="first_name"
+    )
+
+    class Meta:
+        model = Ad
+        fields = ['id', 'name', 'author_id', 'author', 'price', 'description', 'is_published', 'category_id', 'image']
+
+
+''' #################### Selections #################### '''
+
+
+class SelectionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Selection
+        fields = ['id', 'name']
+
+
+class SelectionDetailSerializer(serializers.ModelSerializer):
+    items = AdListSerializer(many=True)
+
+    class Meta:
+        model = Selection
+        fields = '__all__'
+
+
+class SelectionCreateSerializer(serializers.ModelSerializer):
+    items = serializers.SlugRelatedField(
+        required=False,
+        many=True,
+        queryset=Ad.objects.all(),
+        slug_field="id"
+    )
+
+    class Meta:
+        model = Selection
+        fields = '__all__'
+
+    def is_valid(self, *, raise_exception=False):
+
+        self._items = self.initial_data.pop("items")
+        return super().is_valid(raise_exception=raise_exception)
+
+    def create(self, validated_data):
+        selection = Selection.objects.create(**validated_data)
+
+        for item in self._items:
+            if item not in Ad.objects.all().values_list("id", flat=True):
+                print(f'Ad with id {item} not presented in Ads list')
+                continue
+            selection.items.add(item)
+
+        return selection
+
+
+class SelectionUpdateSerializer(serializers.ModelSerializer):
+    items = serializers.SlugRelatedField(
+        required=False,
+        many=True,
+        queryset=Ad.objects.all(),
+        slug_field="id"
+    )
+
+    class Meta:
+        model = Selection
+        fields = ['name', 'owner', 'items']
+
+    def is_valid(self, *, raise_exception=False):
+        self._items = self.initial_data.pop("items", [])
+        return super().is_valid(raise_exception=raise_exception)
+
+    def save(self, **kwargs):
+        selection = super().save()
+        for item in self._items:
+            if item not in Ad.objects.all().values_list("id", flat=True):
+                print(f'Ad with id {item} not presented in source ads list and was excluded from query')
+                continue
+            selection.items.add(item)
+
+        for item in Ad.objects.all().values_list("id", flat=True):
+            if item not in self._items:
+                selection.items.remove(item)
+
+        return selection
+
+
+class SelectionDestroySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Selection
         fields = ["id"]
