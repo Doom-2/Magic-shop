@@ -1,4 +1,6 @@
 import json
+
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -15,7 +17,7 @@ from ads.models import Ad, Category, User, Location, Selection
 from ads.permissions import SelectionUpdateDeletePermission, AdUpdateDeletePermission
 from ads.serializers import UserSerializer, UserCreateSerializer, UserUpdateSerializer, UserDestroySerializer, \
     LocationSerializer, SelectionListSerializer, SelectionDetailSerializer, SelectionCreateSerializer, \
-    SelectionUpdateSerializer, SelectionDestroySerializer, AdUpdateSerializer, AdDestroySerializer
+    SelectionUpdateSerializer, SelectionDestroySerializer, AdUpdateSerializer
 from magic_shop.settings import TOTAL_ON_PAGE
 
 
@@ -119,7 +121,6 @@ class AdCreateView(CreateView):
 
     def post(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
-
         ad_data = json.loads(request.body)
 
         ad = Ad.objects.create(
@@ -151,11 +152,20 @@ class AdUpdateView(UpdateAPIView):
     permission_classes = [AdUpdateDeletePermission]
 
 
-# Delete an existing ad
-class AdDeleteView(DestroyAPIView):
-    queryset = Ad.objects.all()
-    serializer_class = AdDestroySerializer
-    permission_classes = [AdUpdateDeletePermission]
+@method_decorator(csrf_exempt, name='dispatch')
+class AdDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Ad
+    success_url = "/"
+
+    def test_func(self):
+        obj = self.get_object()
+        print(obj.author)
+        return obj.author == self.request.user
+
+    def delete(self, request, *args, **kwargs):
+        super().delete(request, *args, **kwargs)
+
+        return JsonResponse({"status": "OK"}, status=204)
 
 
 # Add or replace an image in the add

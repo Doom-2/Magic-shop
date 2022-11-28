@@ -50,11 +50,6 @@ class User(AbstractUser):
     def total_ads(self):
         return self.ads.filter(is_published=True).count()
 
-    # def save(self, *args, **kwargs):
-    #     self.set_password(self.password)
-    #
-    #     super().save()
-
 
 class Ad(models.Model):
     name = models.CharField(max_length=100)

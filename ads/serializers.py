@@ -39,11 +39,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def is_valid(self, *, raise_exception=False):
-        self._locations = self.initial_data.pop("locations")
+        self._locations = self.initial_data.pop("locations", [])
         return super().is_valid(raise_exception=raise_exception)
 
     def create(self, validated_data):
         user = User.objects.create(**validated_data)
+
+        user.set_password(user.password)
 
         for location in self._locations:
             location_obj, created = Location.objects.get_or_create(
@@ -54,6 +56,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 }
             )
             user.locations.add(location_obj)
+
+        user.save()
 
         return user
 
@@ -72,11 +76,12 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     def is_valid(self, raise_exception=False):
 
-        self._locations = self.initial_data.pop("locations")
+        self._locations = self.initial_data.pop("locations", [])
         return super().is_valid(raise_exception=raise_exception)
 
     def save(self):
         user = super().save()
+        user.set_password(self.initial_data['password'])
 
         for location in self._locations:
             location_obj, _ = Location.objects.get_or_create(
@@ -91,6 +96,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         for location in user.locations.all():
             if location.name not in self._locations:
                 user.locations.remove(location)
+
+        user.save()
 
         return user
 
