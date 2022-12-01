@@ -1,9 +1,11 @@
+from django.core.validators import MinLengthValidator, MaxLengthValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
+    slug = models.CharField(unique=True, max_length=10, null=True, validators=[MinLengthValidator(5)])
 
     class Meta:
         verbose_name = "Категория"
