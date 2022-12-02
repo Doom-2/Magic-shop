@@ -123,15 +123,22 @@ class AdCreateView(CreateView):
         super().post(request, *args, **kwargs)
         ad_data = json.loads(request.body)
 
-        ad = Ad.objects.create(
+        ad = Ad(
             name=ad_data["name"],
             author_id=ad_data["author_id"],
-            price=ad_data["price"],
-            description=ad_data["description"],
-            is_published=ad_data["is_published"],
-            image=ad_data["image"],
+            price=ad_data["price"] if "price" in ad_data else None,
+            description=ad_data["description"] if "description" in ad_data else None,
+            is_published=ad_data["is_published"] if "is_published" in ad_data else False,
+            image=ad_data["image"] if "image" in ad_data else None,
             category_id=ad_data["category_id"]
         )
+
+        try:
+            ad.full_clean()
+        except ValidationError as e:
+            return JsonResponse(e.message_dict, status=422)
+        else:
+            ad.save()
 
         return JsonResponse({
             "id": ad.id,
@@ -143,7 +150,7 @@ class AdCreateView(CreateView):
             "is_published": ad.is_published,
             "category_id": ad.category.id,
             "image": ad.image.url if ad.image else None
-        })
+        }, status=201)
 
 
 class AdUpdateView(UpdateAPIView):
@@ -159,7 +166,6 @@ class AdDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         obj = self.get_object()
-        print(obj.author)
         return obj.author == self.request.user
 
     def delete(self, request, *args, **kwargs):
@@ -230,20 +236,29 @@ class CategoryDetailView(DetailView):
 @method_decorator(csrf_exempt, name='dispatch')
 class CategoryCreateView(CreateView):
     model = Category
-    fields = ["name"]
+    fields = ["name", "slug"]
 
     def post(self, request, *args, **kwargs):
         super().post(request, *args, **kwargs)
 
         cat_data = json.loads(request.body)
 
-        cat = Category.objects.create(
-            name=cat_data["name"]
+        cat = Category(
+            name=cat_data["name"],
+            slug=cat_data["slug"] if "slug" in cat_data else None
         )
+
+        try:
+            cat.full_clean()
+        except ValidationError as e:
+            return JsonResponse(e.message_dict, status=422)
+        else:
+            cat.save()
 
         return JsonResponse({
             "id": cat.id,
             "name": cat.name,
+            "slug": cat.slug
         })
 
 

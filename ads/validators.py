@@ -1,5 +1,13 @@
+from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
 from rest_framework import serializers
+
+
+def check_field_not_true(value):
+    if value:
+        raise ValidationError(
+            'When creating only \'false\' value is allowed'
+        )
 
 
 class DomainBlackList(EmailValidator):

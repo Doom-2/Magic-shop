@@ -37,7 +37,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         queryset=Location.objects.all(),
         slug_field="name"
     )
-    birth_date = serializers.DateField(allow_null=True)
+    birth_date = serializers.DateField(allow_null=True, required=False)
     age = serializers.SerializerMethodField()
     email = serializers.EmailField(
         required=False,
@@ -195,7 +195,7 @@ class SelectionCreateSerializer(serializers.ModelSerializer):
 
     def is_valid(self, *, raise_exception=False):
 
-        self._items = self.initial_data.pop("items")
+        self._items = self.initial_data.pop("items", [])
         return super().is_valid(raise_exception=raise_exception)
 
     def create(self, validated_data):
