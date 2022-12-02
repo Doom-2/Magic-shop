@@ -4,7 +4,6 @@ from rest_framework.validators import UniqueValidator
 from ads.models import Location, User, Ad, Selection
 from .validators import DomainBlackList
 
-
 ''' #################### Locations #################### '''
 
 
@@ -29,7 +28,8 @@ class UserSerializer(serializers.ModelSerializer):
     def get_age(self, obj):
         today = date.today()
         if hasattr(obj.birth_date, "year"):
-            age = today.year - obj.birth_date.year - ((today.month, today.day) < (obj.birth_date.month, obj.birth_date.day))
+            age = today.year - obj.birth_date.year - (
+                    (today.month, today.day) < (obj.birth_date.month, obj.birth_date.day))
             return age
 
     class Meta:
@@ -64,7 +64,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
         today = date.today()
         age = today.year - birth_date.year - (
-                    (today.month, today.day) < (birth_date.month, birth_date.day))
+                (today.month, today.day) < (birth_date.month, birth_date.day))
         if age < 9:
             raise serializers.ValidationError("You're too young for this content")
         return birth_date
@@ -72,7 +72,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
     def get_age(self, obj):
         today = date.today()
         if hasattr(obj.birth_date, "year"):
-            age = today.year - obj.birth_date.year - ((today.month, today.day) < (obj.birth_date.month, obj.birth_date.day))
+            age = today.year - obj.birth_date.year - (
+                        (today.month, today.day) < (obj.birth_date.month, obj.birth_date.day))
             return age
 
     def is_valid(self, *, raise_exception=False):
@@ -161,7 +162,6 @@ class AdDestroySerializer(serializers.ModelSerializer):
 
 
 class AdUpdateSerializer(serializers.ModelSerializer):
-
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field="first_name"
