@@ -78,6 +78,6 @@ else:
     # Validation is ok we will save the instance
     instance.save()
 ```
-при этом сохранение в БД происходит после успешной валидации модели.
+Сохранение в БД происходит после успешной валидации модели.
 
-8. Поле 'age' в модели User заменено на поле birth_date
+8. Поле 'age' в модели User заменено на поле 'birth_date', а 'age' доступен в сериализаторе через SerializerMethodField() и метод get_age()

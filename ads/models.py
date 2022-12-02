@@ -72,7 +72,6 @@ class Ad(models.Model):
     def __str__(self):
         return self.name
 
-
 class Selection(models.Model):
     name = models.CharField(max_length=30, unique=True)
     owner = models.ForeignKey(User, related_name='selections', on_delete=models.CASCADE)
