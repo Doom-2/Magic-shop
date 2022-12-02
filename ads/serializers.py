@@ -1,5 +1,9 @@
+from datetime import date
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from ads.models import Location, User, Ad, Selection
+from .validators import DomainBlackList
+
 
 ''' #################### Locations #################### '''
 
@@ -19,10 +23,10 @@ class UserSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field="name"
     )
-
+    # age = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'role', 'age', 'locations', 'total_ads']
+        fields = ['id', 'username', 'first_name', 'last_name', 'role', 'locations', 'total_ads']
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -33,10 +37,35 @@ class UserCreateSerializer(serializers.ModelSerializer):
         queryset=Location.objects.all(),
         slug_field="name"
     )
+    birth_date = serializers.DateField(allow_null=True)
+    age = serializers.SerializerMethodField()
+    email = serializers.EmailField(
+        required=False,
+        allow_blank=True,
+        validators=[
+            UniqueValidator(queryset=User.objects.all()),
+            DomainBlackList('rambler.ru')
+        ]
+    )
 
     class Meta:
         model = User
         fields = '__all__'
+
+    def validate_birth_date(self, birth_date):
+
+        today = date.today()
+        age = today.year - birth_date.year - (
+                    (today.month, today.day) < (birth_date.month, birth_date.day))
+        if age < 9:
+            raise serializers.ValidationError("You're too young for this content")
+        return birth_date
+
+    def get_age(self, obj):
+        today = date.today()
+        if hasattr(obj.birth_date, "year"):
+            age = today.year - obj.birth_date.year - ((today.month, today.day) < (obj.birth_date.month, obj.birth_date.day))
+            return age
 
     def is_valid(self, *, raise_exception=False):
         self._locations = self.initial_data.pop("locations", [])

@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, MaxLengthValidator, MinValueValidator
 from django.db import models
@@ -38,7 +40,7 @@ class User(AbstractUser):
     ]
 
     role = models.CharField(max_length=15, choices=ROLES, default="member")
-    age = models.PositiveSmallIntegerField(null=True, blank=True)
+    birth_date = models.DateField(null=True)
     locations = models.ManyToManyField(Location, blank=True)
 
     class Meta:
