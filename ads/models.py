@@ -1,14 +1,13 @@
-from datetime import date
-
-from django.core.exceptions import ValidationError
-from django.core.validators import MinLengthValidator, MaxLengthValidator, MinValueValidator
+from django.core.validators import MinLengthValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+
+from ads.validators import check_field_not_true
 
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
-    slug = models.CharField(unique=True, max_length=10, null=True, validators=[MinLengthValidator(5)])
+    slug = models.CharField(unique=True, max_length=10, null=True, blank=True, validators=[MinLengthValidator(5)])
 
     class Meta:
         verbose_name = "Категория"
@@ -56,20 +55,13 @@ class User(AbstractUser):
         return self.ads.filter(is_published=True).count()
 
 
-def check_field_not_true(value: bool):
-    if value:
-        raise ValidationError(
-            'When creating an ad value of this field cannot be \'True\''
-        )
-
-
 class Ad(models.Model):
     name = models.CharField(max_length=100, validators=[MinLengthValidator(10)])
     author = models.ForeignKey(User, related_name='ads', on_delete=models.CASCADE)
-    price = models.PositiveIntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
+    price = models.SmallIntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
     description = models.CharField(max_length=2000, null=True, blank=True)
     is_published = models.BooleanField(default=False, validators=[check_field_not_true])
-    image = models.ImageField(upload_to='images/')
+    image = models.ImageField(upload_to='images/', null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     class Meta:

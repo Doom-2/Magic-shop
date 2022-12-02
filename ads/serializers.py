@@ -23,10 +23,18 @@ class UserSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field="name"
     )
-    # age = serializers.SerializerMethodField()
+
+    age = serializers.SerializerMethodField()
+
+    def get_age(self, obj):
+        today = date.today()
+        if hasattr(obj.birth_date, "year"):
+            age = today.year - obj.birth_date.year - ((today.month, today.day) < (obj.birth_date.month, obj.birth_date.day))
+            return age
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'role', 'locations', 'total_ads']
+        fields = ['id', 'username', 'first_name', 'last_name', 'role', 'age', 'locations', 'total_ads']
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -37,7 +45,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         queryset=Location.objects.all(),
         slug_field="name"
     )
-    birth_date = serializers.DateField(allow_null=True)
+    birth_date = serializers.DateField(allow_null=True, required=False)
     age = serializers.SerializerMethodField()
     email = serializers.EmailField(
         required=False,
@@ -101,7 +109,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name", "password", "age", "locations"]
+        fields = ["id", "username", "first_name", "last_name", "password", "birth_date", "locations"]
 
     def is_valid(self, raise_exception=False):
 
@@ -195,7 +203,7 @@ class SelectionCreateSerializer(serializers.ModelSerializer):
 
     def is_valid(self, *, raise_exception=False):
 
-        self._items = self.initial_data.pop("items")
+        self._items = self.initial_data.pop("items", [])
         return super().is_valid(raise_exception=raise_exception)
 
     def create(self, validated_data):
