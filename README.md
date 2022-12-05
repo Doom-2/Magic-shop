@@ -72,7 +72,7 @@ Output format:
 
 
 4. Creating a new user should be tested through 'Postman' app because if you test it through web browser an
-   AttributeError `This QueryDict instance is immutable` will occur.
+   `AttributeError` `This QueryDict instance is immutable` will occur.
 
 
 5. Access control is implemented in 3 ways:
@@ -83,10 +83,10 @@ Output format:
 
 
 6. Validation:
-    - field 'price' of model 'Ad' through built-in `MinValueValidator()`
-    - field 'is_published' of model 'Ad' through `check_field_not_true()` function
-    - field 'birth_date' of model 'Ad' through function `validate_<field_name>()` in `UserCreateSerializer`
-    - field 'email' of model 'User' through custom `Domain BlackList` class, inherited from `EmailValidator` class and
+    - field `price` of model 'Ad' through built-in `MinValueValidator()`
+    - field `is_published` of model 'Ad' through `check_field_not_true()` function
+    - field `birth_date` of model 'Ad' through function `validate_<field_name>()` in `UserCreateSerializer`
+    - field `email` of model 'User' through custom `Domain BlackList` class, inherited from `EmailValidator` class and
       overridden `__call__()` method
 
    > Notice:
