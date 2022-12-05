@@ -1,21 +1,47 @@
-# Урок 31. Валидаторы и тестирование. 
+# Magic shop
 
-1. Конвертация из csv в json c нужной структурой и возможностью 
-последующей загрузки в таблицы БД произведена, .json файлы хранятся в /ads/fixtures
+### An API with bulletin board logic made on Django and DRF
 
-Для этого использовалась утилита csv2json.py
+1. Views inheritance
+    - Ads
 
-Формат использования:
-```
-python3 csv2json.py file_name.csv model_name
-```
+          list - generic view ListView
 
-Пример:
-python3 csv2json.py /datasets/categories.csv ads.Category
+          detail - function based view
 
-К имени исходного файла будет добавлено расширение .json
+          create - generic view CreateView
 
-Формат вывода:
+          update - DRF UpdateAPIView
+
+          delete - generic view DeleteView
+
+    - Categories
+
+          Django's generic views
+
+    - Users
+
+          DRF Generic API views
+
+    - Locations
+
+          DRF ViewSet
+
+    - Selections
+
+          DRF Generic API views
+
+
+2. Convert from csv to json with csv2json.py
+
+Usage: `python3 csv2json.py file_name.csv model_name`
+
+Example: `python3 csv2json.py /datasets/categories.csv ads.Category`
+
+Once executed, the .json extension will be added to the source file.
+
+Output format:
+
 ```
 [
   {
@@ -37,33 +63,49 @@ python3 csv2json.py /datasets/categories.csv ads.Category
 ]
 ```
 
-2. Вывод дополнительного поля total_ads с количеством опубликованных сообщений пользователя 
-реализован 2-мя способами:
+3. An aditional field `total_ads` for each user, reflecting the quantity of his published ads (is_published = True)
+   was
+   realised by 2 steps:
 
-   - для списка пользователей - через метод annotate() c помощью фильтра и объектов специального класса Q
-   - для отдельного пользователя - через обращение к полям модели объявления из модели пользователя с помощью параметра 'related_name'
+    - in model 'Ad' an option `related_name` of field 'author' was added
+    - in model 'User' a property `@total_ads` with filter and count logic was added
 
-3. Создание пользователя тестировать на Postman, т.к. если отправить POST-запрос /user/create/ из браузера, то это будет неизменяемый QueryDict
 
-4. Управление доступом реализовано 3-мя способами:
-   - для function-based views через декораторы @api_view() и @permission_classes() 
-   - для class-based views на базе Django's GenericView через LoginRequiredMixin и UserPassesTestMixin
-   - для class-based views на базе GenericAPIView DRF через атрибут класса permission_classes
+4. Creating a new user should be tested through 'Postman' app because if you test it through web browser an
+   AttributeError 'This QueryDict instance is immutable' will occur.
 
-5. Валидация:
-   - поле 'price' модели Ad через встроенный валидатор MinValueValidator()
-   - поле 'is_published' модели Ad через внешнюю функцию check_field_not_true()
-   - поле 'birth_date' модели User через функцию сериализатора validate_<field_name>()
-   - поле email модели User через пользовательский класс DomainBlackList() с наследованием от 
-     класса EmailValidator и переопределением метода __call__()
 
-6. Тесты:
-   - для получения уникальных значений определенной длины поля 'slug' модели Category используется factory.fuzzy.FuzzyText(length=10)
-   - для авторизации используется фикстура jwt_access_token(), которая возвращает access token созданного пользователя
-   - при тестировании CRUD объявлений для получения данных в response используется response.json(), а не response.data
-     потому что views для модели Ad написаны на базе Django's GenericView, а не DRF
+5. Access control is implemented in 3 ways:
+    - for function-based views through `@api_view()` and `@permission_classes()` decorators
+    - for Django's class-based generic views through inheritance from `LoginRequiredMixin` and `UserPassesTestMixin`
+      classes
+    - for DRF class-based generic views through `permission_classes` attribute
 
-7. Чтобы собственные валидаторы моделей Ad и Category работали в Django's CreateView для метода post сделана ручная проверка через full_clean():
+
+6. Validation:
+    - field 'price' of model 'Ad' through built-in `MinValueValidator()`
+    - field 'is_published' of model 'Ad' through `check_field_not_true()` function
+    - field 'birth_date' of model 'Ad' through function `validate_<field_name>()` in `UserCreateSerializer`
+    - field 'email' of model 'User' through custom `Domain BlackList` class, inherited from `EmailValidator` class and
+      overridden `__call__()` method
+
+   > Notice:
+   > Field `age` in 'User' model was replaced with field `birth_day`, while `age` has become available in UserSerializer
+   through `SerializerMethodField()` and `get_age()` method.
+
+7. Tests:
+    - the `jwt_access_token()` fixture is used for authentication that returns an access token of the newly created test
+      user
+    - `response.json()` instead of `response.data` is used when testing a CRUD for 'Ad' model because views created
+      using
+      Django's generic views rather than DRF 'generic views'
+    - `factory.fuzzy.FuzzyText(length=10)` is used to get unique values of a certain length of the 'slug' field of the
+      Category model.
+
+
+8. To make the native and external validators of the Ad and Category models work, in Django's 'CreateView' of these
+   models, a manual check was made for the post method via `full_clean()` using following template:
+
 ```
 from django.core.exceptions import ValidationError
 form app.models import MyModel
@@ -75,9 +117,9 @@ except ValidationError as e:
     # Do something when validation is not passing
     return JsonResponse(e.message_dict, status=422)
 else:
-    # Validation is ok we will save the instance
+    # Validation is ok we will save the instance into DB
     instance.save()
 ```
-Сохранение в БД происходит после успешной валидации модели.
 
-8. Поле 'age' в модели User заменено на поле 'birth_date', а 'age' доступен в сериализаторе через SerializerMethodField() и метод get_age()
+9. API documentation with Swagger UI available on ['api/schema/docs/'](http://localhost:8000/api/schema/docs/). Make
+   sure that the server is running before clicking the link.

@@ -1,5 +1,4 @@
 import json
-
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
@@ -9,6 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.viewsets import ModelViewSet
@@ -124,13 +124,13 @@ class AdCreateView(CreateView):
         ad_data = json.loads(request.body)
 
         ad = Ad(
-            name=ad_data["name"],
-            author_id=ad_data["author_id"],
+            name=ad_data["name"] if "name" in ad_data else None,
+            author_id=ad_data["author_id"] if "author_id" in ad_data else None,
             price=ad_data["price"] if "price" in ad_data else None,
             description=ad_data["description"] if "description" in ad_data else None,
             is_published=ad_data["is_published"] if "is_published" in ad_data else False,
             image=ad_data["image"] if "image" in ad_data else None,
-            category_id=ad_data["category_id"]
+            category_id=ad_data["category_id"] if "category_id" in ad_data else None
         )
 
         try:
@@ -157,6 +157,13 @@ class AdUpdateView(UpdateAPIView):
     queryset = Ad.objects.all()
     serializer_class = AdUpdateSerializer
     permission_classes = [AdUpdateDeletePermission]
+
+    @extend_schema(
+        description='Updates all fields of a specific ad',
+        summary='Update all',
+    )
+    def put(self, request, *args, **kwargs):
+        super().put(request)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -338,6 +345,14 @@ class UserDeleteView(DestroyAPIView):
 
 
 # Get all locations
+@extend_schema_view(
+    list=extend_schema(description="Retrieves location list", summary="Get all"),
+    create=extend_schema(description="Creates a new location", summary="New"),
+    retrieve=extend_schema(description="Retrieves single location", summary="Get single"),
+    update=extend_schema(description='Updates all fields of a specific location', summary='Update all'),
+    partial_update=extend_schema(description='Updates some fields of a specific location', summary='Update partial'),
+    destroy=extend_schema(description='Deletes a specific location', summary='Delete single'),
+)
 class LocationsViewSet(ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
