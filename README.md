@@ -72,7 +72,7 @@ Output format:
 
 
 4. Creating a new user should be tested through 'Postman' app because if you test it through web browser an
-   AttributeError 'This QueryDict instance is immutable' will occur.
+   AttributeError `This QueryDict instance is immutable` will occur.
 
 
 5. Access control is implemented in 3 ways:
