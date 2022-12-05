@@ -32,13 +32,13 @@
           DRF Generic API views
 
 
-2. Convert from csv to json with csv2json.py
+2. Convert from `csv` to `json` with `csv2json.py`
 
 Usage: `python3 csv2json.py file_name.csv model_name`
 
 Example: `python3 csv2json.py /datasets/categories.csv ads.Category`
 
-Once executed, the .json extension will be added to the source file.
+Once executed, the `.json` extension will be added to the source file.
 
 Output format:
 
